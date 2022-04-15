@@ -1,0 +1,6 @@
+format: v0.0.1
+storage:
+  type: files
+  format: yaml
+  path: .cache/todo-manager
+

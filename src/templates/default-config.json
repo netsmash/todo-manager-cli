@@ -1,0 +1,9 @@
+{
+  "format": "v0.0.1",
+  "storage": {
+    "type": "files",
+    "format": "yaml",
+    "path": "${HOME}/.cache/todo-manager",
+    "overrides": ["./tm.config.yml"]
+  }
+}

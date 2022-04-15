@@ -1,0 +1,22 @@
+{
+  "name": "Flow's name",
+  "description": "This is the flow description.\nObserve it could have several lines.",
+  "default": "To Do",
+  "steps": [
+    {
+      "action": "add",
+      "name": "To Do",
+      "color": "red"
+    },
+    {
+      "action": "add",
+      "name": "In Progress",
+      "color": "yellow"
+    },
+    {
+      "action": "add",
+      "name": "Done",
+      "color": "green"
+    }
+  ]
+}
