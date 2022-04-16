@@ -1,6 +1,6 @@
 {
   "name": "todo-manager-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple CLI to manage tasks",
   "scripts": {
     "build": "npm run clean && tsc && cp package.json README.md dist/",
@@ -14,7 +14,20 @@
     "todo": "./index.js"
   },
   "author": "NetSmash",
-  "license": "ISC",
+  "license": "MIT",
+  "keywords": [
+    "todo",
+    "todo-cli",
+    "todo-app",
+    "command-line",
+    "manager",
+    "todo-manager",
+    "task-manager",
+    "todolist",
+    "cli",
+    "yml",
+    "yaml"
+  ],
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/node": "^16.11.12",
