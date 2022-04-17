@@ -1,20 +1,24 @@
 {
   "name": "todo-manager-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A simple CLI to manage tasks",
   "scripts": {
     "build": "npm run clean && tsc && cp package.json README.md dist/",
     "clean": "rm -rf ./dist",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint src/ --ext .ts,.tsx",
-    "start": "ts-node src/index.ts",
-    "test": "NODE_ENV=test && jest"
+    "start": "ts-node src/index.ts"
   },
   "bin": {
     "todo": "./index.js"
   },
   "author": "NetSmash",
   "license": "MIT",
+  "homepage": "https://github.com/netsmash/todo-manager-cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/netsmash/todo-manager-cli"
+  },
   "keywords": [
     "todo",
     "todo-cli",
@@ -29,7 +33,6 @@
     "yaml"
   ],
   "devDependencies": {
-    "@types/jest": "^27.4.1",
     "@types/node": "^16.11.12",
     "@types/yaml": "^1.9.7",
     "@typescript-eslint/eslint-plugin": "^5.14.0",
@@ -37,9 +40,7 @@
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "jest": "^27.5.1",
     "prettier": "^2.5.1",
-    "ts-jest": "^27.1.1",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
   },
