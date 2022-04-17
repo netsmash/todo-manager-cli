@@ -1,12 +1,5 @@
 import { interfaces } from 'inversify';
 import {
-  IBoardFileSource,
-  IEntityFileSource,
-  IFlowFileSource,
-  IFlowStepFileSource,
-  ITaskFileSource,
-} from 'models';
-import {
   IEntity,
   ISourceOperators,
   NotImplementedError,
@@ -18,8 +11,16 @@ import {
   IFlow,
   entityIsSaved,
 } from 'todo-manager';
+import {
+  IBoardFileSource,
+  IEntityFileSource,
+  IFlowFileSource,
+  IFlowStepFileSource,
+  ITaskFileSource,
+} from '../models';
+import { join, dirname } from 'node:path';
+import { mkdir } from 'node:fs/promises';
 import { Identificators } from '../identificators';
-import { join } from 'node:path';
 import { CliError } from '../errors';
 import { asyncQueuedMap, createAsyncQueue } from '../lib';
 import type { TYAMLCacheOperators } from './yml-cache';
@@ -103,7 +104,12 @@ export class YAMLFileSourceOperators implements ISourceOperators {
       try {
         return await writeToCache(filePath)(data);
       } catch (error) {
-        throw new CliError(`Unable to write on '${filePath}'.`);
+        try {
+          await mkdir(dirname(filePath), { recursive: true });
+          return await writeToCache(filePath)(data);
+        } catch (error) {
+          throw new CliError(`Unable to write on '${filePath}'.`);
+        }
       }
     };
   }
