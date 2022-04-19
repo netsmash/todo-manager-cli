@@ -1,5 +1,7 @@
 # To Do Manager CLI
 
+![use-example](example.gif)
+
 This library provides a CLI tool to manage locally "to do" tasks.
 
 ## Install
