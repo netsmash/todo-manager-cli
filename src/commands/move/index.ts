@@ -3,7 +3,7 @@ import { moveTask } from './task';
 
 export const addMoveCommands = (moveCommand: Command): Command => {
   moveCommand
-    .command('task [task...]')
+    .command('task [task...]', { isDefault: true })
     .alias('t')
     .description(
       `Move one or more tasks to a board or step. Either -b or -s options should be provided.`,
