@@ -27,10 +27,7 @@ export class ParserBaseOperators {
         return allowColor;
       }
       const configuration = await getConfiguration();
-      if (configuration.allowColor !== undefined) {
-        return configuration.allowColor;
-      }
-      return true;
+      return configuration.view.allowColor;
     };
   }
 

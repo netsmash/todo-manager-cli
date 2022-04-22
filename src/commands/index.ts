@@ -36,7 +36,7 @@ export const addMainCommand = (command: Command) => {
     const allowColor = thisCommand.opts()['color'];
     await asyncPipe(
       ops.configuration.getConfiguration,
-      ops.configuration.update({ allowColor }),
+      ops.configuration.update({ view: { allowColor } }),
       ops.configuration.setConfiguration,
     )();
     // log start

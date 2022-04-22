@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import { mkdir, writeFile, readFile } from 'fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { IConfiguration, IConfigurationFile, IPartialConfigurationFile } from '../models';
+import { IConfiguration, IConfigurationFile, IConfigurationState, IPartialConfiguration, IPartialConfigurationFile } from '../models';
 import defaultConfiguration from '../templates/default-config.json';
 
 @injectable()
@@ -18,7 +18,15 @@ export class ConfigurationOperators {
     YAML.ToStringOptions = {
     blockQuote: 'literal',
   };
-  protected _value: IConfigurationFile | undefined;
+  protected _value: IConfigurationState | undefined;
+
+  public get adaptConfigurationFromState() {
+    return (state: IConfigurationState): IConfiguration => {
+      return {
+        ...state
+      };
+    }
+  }
 
   public get filePath() {
     return join(this.dirPath, this.fileName);
@@ -26,22 +34,26 @@ export class ConfigurationOperators {
 
   public get getConfiguration() {
     const getCurrentValue = () => this._value;
-    const setCurrentValue = (value: IConfigurationFile) => (this._value = value);
+    const setCurrentValue = (value: IConfigurationState) => (this._value = value);
     const getOrCreate = this.getOrCreate.bind(this);
+    const adaptConfigurationFromState = this.adaptConfigurationFromState.bind(this);
     return async (): Promise<IConfiguration> => {
       if (getCurrentValue() === undefined) {
         setCurrentValue(await getOrCreate());
       }
-      return getCurrentValue() as IConfiguration;
+      return adaptConfigurationFromState(getCurrentValue() as IConfigurationState);
     };
   }
 
   public get setConfiguration() {
-    const setCurrentValue = (value: IConfigurationFile) => (this._value = value);
+    const setCurrentValue = (value: IConfigurationState) => (this._value = value);
     const getCurrentValue = () => this._value;
-    return (configuration: IConfiguration) => {
-      setCurrentValue(configuration);
-      return getCurrentValue() as IConfiguration;
+    const update = this.updateState.bind(this);
+    return (configuration: IPartialConfiguration | IConfiguration): IConfigurationState => {
+      const currentValue = getCurrentValue() as IConfigurationState;
+      const updatedValue = update(configuration)(currentValue)
+      setCurrentValue(updatedValue);
+      return getCurrentValue() as IConfigurationState;
     };
   }
 
@@ -55,20 +67,74 @@ export class ConfigurationOperators {
   }
 
   public get update() {
-    return (partial: IPartialConfigurationFile | null | undefined) =>
-      (configuration: IConfigurationFile) => {
+    return (
+      partial: IPartialConfiguration | IConfiguration | null | undefined,
+    ) =>
+      (configuration: IConfiguration): IConfiguration => {
         partial = partial || {};
+        let storage: IConfiguration['storage'] = configuration.storage;
+        if (partial.storage !== undefined) {
+          storage = { ...storage, ...partial.storage }
+        }
+        let view: IConfigurationState['view'] = configuration.view;
+        if (partial.view !== undefined) {
+          view = {...view, ...partial.view};
+        }
         return {
-          format: configuration.format,
-          allowColor: partial.allowColor ?? configuration.allowColor,
-          storage: partial.storage ?? configuration.storage,
-          overrides: Array.from(
+          storage,
+          view,
+        };
+      };
+  }
+
+  public get updateState() {
+    return (
+      partial: IPartialConfiguration | IConfiguration | null | undefined,
+    ) =>
+      (configuration: IConfigurationState): IConfigurationState => {
+        partial = partial || {};
+        let storage: IConfigurationState['storage'] = configuration.storage;
+        if (partial.storage !== undefined) {
+          storage = { ...storage, ...partial.storage }
+        }
+        let view: IConfigurationState['view'] = configuration.view;
+        if (partial.view !== undefined) {
+          view = {...view, ...partial.view};
+        }
+        return {
+          storage,
+          view,
+          files: configuration.files
+        };
+      };
+  }
+
+
+  public get updateStateFromFile() {
+    return (
+      partial: IPartialConfigurationFile | null | undefined,
+      filePath: string,
+    ) =>
+      (configuration: IConfigurationState): IConfigurationState => {
+        partial = partial || {};
+        let storage: IConfigurationState['storage'] = configuration.storage;
+        if (partial.storage !== undefined) {
+          storage = { ...partial.storage, file: filePath }
+        }
+        const view: IConfigurationState['view'] = configuration.view;
+        if (partial.allowColor !== undefined) {
+          view.allowColor = partial.allowColor;
+        }
+        return {
+          storage,
+          view,
+          files: Array.from(
             new Set([
-              ...(configuration.overrides || []),
-              ...(partial.overrides || []),
+              ...(configuration.files || []),
+              ...(partial.files || []),
             ]),
           ),
-        } as IConfigurationFile;
+        };
       };
   }
 
@@ -92,45 +158,57 @@ export class ConfigurationOperators {
   }
 
   public get getOrCreate() {
+    const defaultFilePath = this.filePath;
     const dirPath = this.dirPath;
     const write = this.write.bind(this);
     const read = this.read.bind(this);
-    const update = this.update.bind(this);
+    const update = this.updateStateFromFile.bind(this);
 
-    return async (): Promise<IConfigurationFile> => {
-      let configuration: IConfigurationFile;
-      const obtainedConfiguration = await read();
+    return async (): Promise<IConfigurationState> => {
+      let configurationFile: IConfigurationFile;
+      const obtainedConfiguration = await read(defaultFilePath);
       if (obtainedConfiguration === undefined) {
         // assume file do not exists
         await mkdir(dirPath, { recursive: true });
-        configuration = defaultConfiguration as IConfigurationFile;
-        configuration.storage.path = configuration.storage.path.replace(
+        configurationFile = defaultConfiguration as IConfigurationFile;
+        configurationFile.storage.path = configurationFile.storage.path.replace(
           '${HOME}',
           homedir(),
         );
-        await write(configuration);
+        await write(configurationFile);
       } else {
-        configuration = obtainedConfiguration;
+        configurationFile = obtainedConfiguration;
       }
+      // transform configuration file into a state
+      let configurationState: IConfigurationState = {
+        storage: {
+          ...configurationFile.storage,
+          file: defaultFilePath
+        },
+        view: {
+          allowColor: true,
+        },
+        files: [defaultFilePath]
+      };
       const alreadyVisited: Set<string> = new Set();
-      let overrides: string[] = configuration.overrides || [];
-      while (overrides.length > 0) {
-        for (const overridePath of overrides) {
+      let files: string[] = configurationState.files;
+      while (files.length > 0) {
+        for (const filePath of files) {
           // get partial conf
-          const partial = await read(overridePath);
+          const partial = await read(filePath);
           // update configuration
           if (partial !== undefined) {
-            configuration = update(partial)(configuration);
+            configurationState = update(partial, filePath)(configurationState);
           }
           // mark as visited
-          alreadyVisited.add(overridePath);
+          alreadyVisited.add(filePath);
         }
-        // remove already visited overrides
-        overrides = (configuration.overrides || []).filter(
-          (override) => !alreadyVisited.has(override),
+        // remove already visited files
+        files = configurationState.files.filter(
+          (file) => !alreadyVisited.has(file),
         );
       }
-      return configuration;
+      return configurationState;
     };
   }
 }
