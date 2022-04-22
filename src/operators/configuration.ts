@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import { mkdir, writeFile, readFile } from 'fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { IConfiguration, IPartialConfiguration } from '../models';
+import { IConfiguration, IConfigurationFile, IPartialConfigurationFile } from '../models';
 import defaultConfiguration from '../templates/default-config.json';
 
 @injectable()
@@ -18,7 +18,7 @@ export class ConfigurationOperators {
     YAML.ToStringOptions = {
     blockQuote: 'literal',
   };
-  protected _value: IConfiguration | undefined;
+  protected _value: IConfigurationFile | undefined;
 
   public get filePath() {
     return join(this.dirPath, this.fileName);
@@ -26,7 +26,7 @@ export class ConfigurationOperators {
 
   public get getConfiguration() {
     const getCurrentValue = () => this._value;
-    const setCurrentValue = (value: IConfiguration) => (this._value = value);
+    const setCurrentValue = (value: IConfigurationFile) => (this._value = value);
     const getOrCreate = this.getOrCreate.bind(this);
     return async (): Promise<IConfiguration> => {
       if (getCurrentValue() === undefined) {
@@ -37,7 +37,7 @@ export class ConfigurationOperators {
   }
 
   public get setConfiguration() {
-    const setCurrentValue = (value: IConfiguration) => (this._value = value);
+    const setCurrentValue = (value: IConfigurationFile) => (this._value = value);
     const getCurrentValue = () => this._value;
     return (configuration: IConfiguration) => {
       setCurrentValue(configuration);
@@ -48,15 +48,15 @@ export class ConfigurationOperators {
   public get write() {
     const yamlOptions = this.yamlOptions;
     const filePath = this.filePath;
-    return async (configuration: IConfiguration) => {
+    return async (configuration: IConfigurationFile) => {
       const configurationStr = YAML.stringify(configuration, yamlOptions);
       await writeFile(filePath, configurationStr, { encoding: 'utf-8' });
     };
   }
 
   public get update() {
-    return (partial: IPartialConfiguration | null | undefined) =>
-      (configuration: IConfiguration) => {
+    return (partial: IPartialConfigurationFile | null | undefined) =>
+      (configuration: IConfigurationFile) => {
         partial = partial || {};
         return {
           format: configuration.format,
@@ -68,7 +68,7 @@ export class ConfigurationOperators {
               ...(partial.overrides || []),
             ]),
           ),
-        } as IConfiguration;
+        } as IConfigurationFile;
       };
   }
 
@@ -77,8 +77,8 @@ export class ConfigurationOperators {
 
     return async (
       filePath: string = defaultFilePath,
-    ): Promise<IConfiguration | undefined> => {
-      let configuration: IConfiguration | undefined;
+    ): Promise<IConfigurationFile | undefined> => {
+      let configuration: IConfigurationFile | undefined;
       try {
         const configurationStr = (
           await readFile(filePath, { encoding: 'utf-8' })
@@ -97,13 +97,13 @@ export class ConfigurationOperators {
     const read = this.read.bind(this);
     const update = this.update.bind(this);
 
-    return async (): Promise<IConfiguration> => {
-      let configuration: IConfiguration;
+    return async (): Promise<IConfigurationFile> => {
+      let configuration: IConfigurationFile;
       const obtainedConfiguration = await read();
       if (obtainedConfiguration === undefined) {
         // assume file do not exists
         await mkdir(dirPath, { recursive: true });
-        configuration = defaultConfiguration as IConfiguration;
+        configuration = defaultConfiguration as IConfigurationFile;
         configuration.storage.path = configuration.storage.path.replace(
           '${HOME}',
           homedir(),

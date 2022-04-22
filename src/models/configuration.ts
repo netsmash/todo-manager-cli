@@ -1,14 +1,16 @@
-interface IConfigurationStorageFiles {
+interface IConfigurationFileStorageFiles {
   type: 'files';
   format: 'yaml';
   path: string;
 }
 
-export interface IConfiguration {
+export interface IConfigurationFile {
   format: string;
-  storage: IConfigurationStorageFiles;
+  storage: IConfigurationFileStorageFiles;
   allowColor?: boolean;
   overrides?: string[];
 }
 
-export interface IPartialConfiguration extends Partial<IConfiguration> {}
+export interface IPartialConfigurationFile extends Partial<IConfigurationFile> {}
+
+export interface IConfiguration extends IConfigurationFile {}
