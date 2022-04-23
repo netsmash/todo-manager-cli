@@ -19,6 +19,9 @@ export class ConfigurationOperators {
     blockQuote: 'literal',
   };
   protected _value: IConfigurationState | undefined;
+  public get state(): IConfigurationState {
+    return this._value as IConfigurationState;
+  }
 
   public get adaptConfigurationFromState() {
     return (state: IConfigurationState): IConfiguration => {

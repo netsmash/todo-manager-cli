@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { showBoard } from './board';
 import { showFlow } from './flow';
 import { showTask } from './task';
+import { showConfiguration } from './configuration';
 
 export const addShowCommands = (showCommand: Command): Command => {
   showCommand
@@ -41,6 +42,12 @@ export const addShowCommands = (showCommand: Command): Command => {
       'Filter results by matching regexp with id and name. This argument is ignored if the [flow-id] argument is provided.',
     )
     .action(showFlow);
+
+  showCommand
+    .command('configuration')
+    .alias('config')
+    .alias('conf')
+    .action(showConfiguration);
 
   return showCommand;
 };

@@ -227,6 +227,30 @@ export class ParserBaseOperators {
         return result;
       };
   }
+
+  public get parseTitle(): TItemParser<string> {
+    const isColorAllowed = this.isColorAllowed.bind(this);
+    const setColor = this.setColor.bind(this);
+    const hrChar = '─';
+    return ({ width, align = 'left', allowColor } = {}) =>
+      async (title) => {
+        let result = '';
+        const titleLength = title.length;
+        if (width !== undefined) {
+          result = StringUtils.align(width, align)(title);
+          result += `\n` + StringUtils.align(width, align)(
+            StringUtils.repeatUntilLength(hrChar)(titleLength)
+          );
+        } else {
+          result = title;
+          result += `\n`+StringUtils.repeatUntilLength(hrChar)(titleLength);
+        }
+        if (await isColorAllowed(allowColor)) {
+          result = setColor('whiteBright')(result);
+        }
+        return result;
+      };
+  }
 }
 
 export type TParserBaseOperators = ParserBaseOperators;
