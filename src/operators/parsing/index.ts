@@ -7,7 +7,10 @@ import { ParserFlowStepOperators, TParserFlowStepOperators } from './flow-step';
 import { ParserBoardOperators, TParserBoardOperators } from './board';
 import { ParserFlowOperators, TParserFlowOperators } from './flow';
 import { ParserCacheOperators, TParserCacheOperators } from './cache';
-import { ParserConfigurationOperators, TParserConfigurationOperators } from './configuration';
+import {
+  ParserConfigurationOperators,
+  TParserConfigurationOperators,
+} from './configuration';
 
 // DO NOT EXPORT, so we avoid circular dependencies
 // export * from './identificators';
@@ -60,7 +63,9 @@ export const parsingBinding = (container: interfaces.Container) => {
 export const getParsingOperators = (
   container: interfaces.Container,
 ): IParsingOperators => ({
-  configuration: container.get<TParserConfigurationOperators>(ParsingIdentificators.Configuration),
+  configuration: container.get<TParserConfigurationOperators>(
+    ParsingIdentificators.Configuration,
+  ),
   task: container.get<TParserTaskOperators>(ParsingIdentificators.Task),
   flowStep: container.get<TParserFlowStepOperators>(
     ParsingIdentificators.FlowStep,

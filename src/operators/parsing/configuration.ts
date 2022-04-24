@@ -1,7 +1,5 @@
 import { inject, injectable } from 'inversify';
-import {
-    IConfigurationState,
-} from '../../models';
+import { IConfigurationState } from '../../models';
 //import { StringUtils } from '../../lib';
 import { Identificators } from '../../identificators';
 import { TConfigurationOperators } from '../configuration';
@@ -22,7 +20,7 @@ export class ParserConfigurationOperators {
   ) {}
 
   protected hrChar = '─';
-  protected titleColor: TFlowStepColor  = 'whiteBright';
+  protected titleColor: TFlowStepColor = 'whiteBright';
   protected fileNameColor: TFlowStepColor = 'green';
 
   public get main() {
@@ -37,7 +35,9 @@ export class ParserConfigurationOperators {
       async (state: IConfigurationState) => {
         let result = ``;
         result += await parseTitle({})('Configuration Files');
-        result += `\nMain file at ${setColor(fileNameColor)(config.filePath)} .`;
+        result += `\nMain file at ${setColor(fileNameColor)(
+          config.filePath,
+        )} .`;
         if (state.files.length > 1) {
           result += `\nFollowing files could partially override configuration:`;
           for (const filePath of state.files) {
@@ -46,10 +46,10 @@ export class ParserConfigurationOperators {
             }
           }
         }
-        result += `\n\n` + await parseView(state);
-        result += `\n\n` + await parseStorage(state);
+        result += `\n\n` + (await parseView(state));
+        result += `\n\n` + (await parseStorage(state));
         return result;
-      }
+      },
     );
   }
 
@@ -61,9 +61,11 @@ export class ParserConfigurationOperators {
       const deny = setColor(`redBright`);
       let result = ``;
       result += await parseTitle({})('View Options');
-      result += `\nColor ${state.view.allowColor ? remark('is') : deny('is not')} allowed.`
+      result += `\nColor ${
+        state.view.allowColor ? remark('is') : deny('is not')
+      } allowed.`;
       return result;
-    }
+    };
   }
 
   public get parseStorage() {
@@ -77,11 +79,13 @@ export class ParserConfigurationOperators {
       const storage = state.storage;
       result += `\nDefined at file ${fileName(storage.file)} .`;
       if (storage.type === 'files' && storage.format === 'yaml') {
-        result += `\nEntities ${remark('stored locally')} using ${remark('YAML')}`;
+        result += `\nEntities ${remark('stored locally')} using ${remark(
+          'YAML',
+        )}`;
         result += ` at folder ${fileName(storage.path)} .`;
       }
       return result;
-    }
+    };
   }
 }
 

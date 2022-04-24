@@ -11,7 +11,8 @@ export interface IConfigurationFile {
   files?: string[];
 }
 
-export interface IPartialConfigurationFile extends Partial<IConfigurationFile> {}
+export interface IPartialConfigurationFile
+  extends Partial<IConfigurationFile> {}
 
 export interface IConfiguration {
   storage: IConfigurationFileStorageFiles;
@@ -20,14 +21,14 @@ export interface IConfiguration {
   };
 }
 export interface IPartialConfiguration {
-  storage?: IConfigurationStateFileStorageFiles,
+  storage?: IConfigurationStateFileStorageFiles;
   view?: {
     allowColor?: boolean;
   };
 }
 
-
-export interface IConfigurationStateFileStorageFiles extends IConfigurationFileStorageFiles {
+export interface IConfigurationStateFileStorageFiles
+  extends IConfigurationFileStorageFiles {
   file: string;
 }
 export interface IConfigurationState {

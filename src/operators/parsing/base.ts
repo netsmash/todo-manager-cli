@@ -238,12 +238,15 @@ export class ParserBaseOperators {
         const titleLength = title.length;
         if (width !== undefined) {
           result = StringUtils.align(width, align)(title);
-          result += `\n` + StringUtils.align(width, align)(
-            StringUtils.repeatUntilLength(hrChar)(titleLength)
-          );
+          result +=
+            `\n` +
+            StringUtils.align(
+              width,
+              align,
+            )(StringUtils.repeatUntilLength(hrChar)(titleLength));
         } else {
           result = title;
-          result += `\n`+StringUtils.repeatUntilLength(hrChar)(titleLength);
+          result += `\n` + StringUtils.repeatUntilLength(hrChar)(titleLength);
         }
         if (await isColorAllowed(allowColor)) {
           result = setColor('whiteBright')(result);
