@@ -80,8 +80,38 @@ export class ParserBaseOperators {
     };
   }
 
+  public get minimalLengthOf() {
+    const len = this.len.bind(this);
+    return <T extends any = any>(fn: TItemParser<T>): TLenItemParser<T> => {
+      return ({ shrinkable = false, ...options } = {}) =>
+        async (obj: T) => {
+          let length = len(await fn({ ...options, allowColor: false })(obj));
+          if (shrinkable) {
+            const { shrinkableMin = 0, shrinkStr = '' } = options;
+            if (shrinkableMin === 0) {
+              return 0;
+            }
+            length = Math.min(length, shrinkableMin + len(shrinkStr));
+          }
+          return length;
+        };
+    };
+  }
+
   public get getMaxLength() {
     const lengthOf = this.lengthOf.bind(this);
+    return <T extends any>(fn: TItemParser<T>): TLenItemParser<Iterable<T>> => {
+      const len = lengthOf(fn);
+      return (options) => async (items) => {
+        return (
+          await asyncQueuedMap((item: T) => len(options)(item))(items)
+        ).reduce((a, b) => Math.max(a, b), 0);
+      };
+    };
+  }
+
+  public get getMinimalLength() {
+    const lengthOf = this.minimalLengthOf.bind(this);
     return <T extends any>(fn: TItemParser<T>): TLenItemParser<Iterable<T>> => {
       const len = lengthOf(fn);
       return (options) => async (items) => {
@@ -177,13 +207,20 @@ export class ParserBaseOperators {
   }
 
   public get parseName(): TItemParser<IEntity> {
-    const getSelf = () => this.parseName;
-    return ({ width, align = 'left', ...opts } = {}) =>
+    const len = this.len.bind(this);
+    return ({ width, align = 'left', shrinkable, shrinkStr = '' } = {}) =>
       async (entity) => {
-        if (width !== undefined) {
-          return StringUtils.align(width, align)(await getSelf()(opts)(entity));
+        let result = `${entity.name}`;
+        let resultLen = len(result);
+        if (width === undefined) {
+          // Do nothing
+        } else if (resultLen <= width) {
+          result = StringUtils.align(width, align)(result);
+        } else if (shrinkable) {
+          result = result.substring(0, width - len(shrinkStr)) + shrinkStr;
+          result = result.substring(0, width);
         }
-        return `${entity.name}`;
+        return result;
       };
   }
 
@@ -191,7 +228,14 @@ export class ParserBaseOperators {
     const parseDate = this.parseDate.bind(this);
     const isColorAllowed = this.isColorAllowed.bind(this);
     const setColor = this.setColor.bind(this);
-    return ({ width, align = 'left', allowColor } = {}) =>
+    const len = this.len.bind(this);
+    return ({
+        width,
+        align = 'left',
+        allowColor,
+        shrinkable,
+        shrinkStr = '',
+      } = {}) =>
       async (entity) => {
         let result = ``;
         if (!entityIsSaved(entity)) {
@@ -201,8 +245,14 @@ export class ParserBaseOperators {
         } else {
           result = `Created ${await parseDate({})(entity.createdAt)}`;
         }
-        if (width !== undefined) {
+        let resultLen = len(result);
+        if (width === undefined) {
+          // Do nothing
+        } else if (resultLen <= width) {
           result = StringUtils.align(width, align)(result);
+        } else if (shrinkable) {
+          result = result.substring(0, width - len(shrinkStr)) + shrinkStr;
+          result = result.substring(0, width);
         }
         if (await isColorAllowed(allowColor)) {
           result = setColor(`grey`)(result);
@@ -214,12 +264,25 @@ export class ParserBaseOperators {
   public get parseId(): TItemParser<IEntity & ISaved> {
     const isColorAllowed = this.isColorAllowed.bind(this);
     const setColor = this.setColor.bind(this);
-    return ({ width, align = 'left', allowColor } = {}) =>
+    const len = this.len.bind(this);
+    return ({
+        width,
+        align = 'left',
+        allowColor,
+        shrinkable,
+        shrinkStr = '',
+      } = {}) =>
       async (entity) => {
         let result = '';
         result = String(entity.id);
-        if (width !== undefined) {
+        let resultLen = len(result);
+        if (width === undefined) {
+          // Do nothing
+        } else if (resultLen <= width) {
           result = StringUtils.align(width, align)(result);
+        } else if (shrinkable) {
+          result = result.substring(0, width - len(shrinkStr)) + shrinkStr;
+          result = result.substring(0, width);
         }
         if (await isColorAllowed(allowColor)) {
           result = setColor(`grey`)(result);
