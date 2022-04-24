@@ -45,9 +45,7 @@ export const addShowCommands = (showCommand: Command): Command => {
 
   showCommand
     .command('configuration')
-    .description(
-      `Shows information about the current configuration.`
-    )
+    .description(`Shows information about the current configuration.`)
     .aliases(['config', 'conf'])
     .action(showConfiguration);
 
