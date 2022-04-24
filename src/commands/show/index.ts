@@ -44,9 +44,11 @@ export const addShowCommands = (showCommand: Command): Command => {
     .action(showFlow);
 
   showCommand
-    .command('configuration')
-    .alias('config')
-    .alias('conf')
+    .command(
+      'configuration',
+      `Shows information about the current configuration.`
+    )
+    .aliases(['config', 'conf'])
     .action(showConfiguration);
 
   return showCommand;
