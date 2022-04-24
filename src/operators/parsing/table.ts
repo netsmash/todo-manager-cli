@@ -39,11 +39,13 @@ export class ParserTableOperators {
   public get parseTable(): TTableParser {
     const logging = this.logging;
     const getColumnWidth = this.getColumnWidth.bind(this);
+    const getConfiguration = this.config.getConfiguration.bind(this.config);
     return <T extends any = any>(tableOptions: ITableParserOptions = {}) =>
       (_columns: Iterable<TColumn<T>>) =>
       (_valuesToMeasure: Iterable<T>) =>
         logging.logAsyncOperation('ParserTable.parseTable()')(
           async (_values: Iterable<T>) => {
+            const configuration = await getConfiguration();
             const width: number = tableOptions?.width || process.stdout.columns;
             const gap: number = tableOptions?.gap || 1;
             const gapFillStr: string = tableOptions.gapFillStr || ' ';
@@ -60,7 +62,9 @@ export class ParserTableOperators {
               columnWidths.reduce((a, b) => a + b, 0) +
               gap * (columns.length - 1);
 
-            if (width < computedWidth) {
+            if (!configuration.view.fitToOutputWidth) {
+              // Do nothing
+            } else if (width < computedWidth) {
               throw new CliError('Table does not fit into the output.');
             }
 

@@ -4,6 +4,6 @@
     "type": "files",
     "format": "yaml",
     "path": "${HOME}/.cache/todo-manager",
-    "overrides": ["./tm.config.yml"]
+    "files": ["./tm.config.yml"]
   }
 }

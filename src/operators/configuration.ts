@@ -140,6 +140,9 @@ export class ConfigurationOperators {
         if (partial.allowColor !== undefined) {
           view.allowColor = partial.allowColor;
         }
+        if (partial.fitToOutputWidth !== undefined) {
+          view.fitToOutputWidth = partial.fitToOutputWidth;
+        }
         return {
           storage,
           view,
@@ -199,6 +202,7 @@ export class ConfigurationOperators {
         },
         view: {
           allowColor: true,
+          fitToOutputWidth: false,
         },
         files: [defaultFilePath],
       };
