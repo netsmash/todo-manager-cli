@@ -10,6 +10,13 @@ This library provides a CLI tool to manage locally "to do" tasks.
 npm install -g todo-manager-cli
 ```
 
+> *Warning*: During the development phase (prior to `v1.0.0`) this software can
+experiment changes without being notified in a change log.
+>
+> So: please, keep in mind that some changes in your config files or data source
+files could be needed when update the version.
+Otherwise, wait until the first stable version `v1.0.0`.
+
 ## Usage
 
 ```
