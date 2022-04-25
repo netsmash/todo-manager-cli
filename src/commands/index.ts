@@ -12,6 +12,7 @@ import { addEditCommands } from './edit';
 export const addMainCommand = (command: Command) => {
   command
     .version('v0.0.1', '-v, --version')
+    .option('--color', 'Allow colors and styles on output')
     .option('--no-color', 'Raw output without colors nor styles')
     .option(
       '--fit',
