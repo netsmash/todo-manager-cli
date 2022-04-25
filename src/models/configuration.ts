@@ -8,6 +8,7 @@ export interface IConfigurationFile {
   format: string;
   storage: IConfigurationFileStorageFiles;
   allowColor?: boolean;
+  fitToOutputWidth?: boolean;
   files?: string[];
 }
 
@@ -18,12 +19,14 @@ export interface IConfiguration {
   storage: IConfigurationFileStorageFiles;
   view: {
     allowColor: boolean;
+    fitToOutputWidth: boolean;
   };
 }
 export interface IPartialConfiguration {
   storage?: IConfigurationStateFileStorageFiles;
   view?: {
     allowColor?: boolean;
+    fitToOutputWidth?: boolean;
   };
 }
 
@@ -35,6 +38,7 @@ export interface IConfigurationState {
   storage: IConfigurationStateFileStorageFiles;
   view: {
     allowColor: boolean;
+    fitToOutputWidth: boolean;
   };
   files: string[];
 }

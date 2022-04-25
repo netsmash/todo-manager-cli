@@ -4,6 +4,9 @@ export interface IItemParserOptions {
   width?: number;
   align?: 'left' | 'center' | 'right';
   allowColor?: boolean;
+  shrinkable?: boolean;
+  shrinkableMin?: number;
+  shrinkStr?: string;
 }
 
 export interface ITableParserOptions {

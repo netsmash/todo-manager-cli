@@ -12,7 +12,13 @@ import { addEditCommands } from './edit';
 export const addMainCommand = (command: Command) => {
   command
     .version('v0.0.1', '-v, --version')
+    .option('--color', 'Allow colors and styles on output')
     .option('--no-color', 'Raw output without colors nor styles')
+    .option(
+      '--fit',
+      'Force view to fit in current terminal width. It raises an error if it is not possible.',
+    )
+    .option('--no-fit', 'Not to force view to fit in current terminal width')
     .option('--debug', 'Output debug information');
 
   addShowCommands(
@@ -34,9 +40,10 @@ export const addMainCommand = (command: Command) => {
     // configure color
     const ops = await getOperators();
     const allowColor = thisCommand.opts()['color'];
+    const fitToOutputWidth = thisCommand.opts()['fit'];
     await asyncPipe(
       ops.configuration.getConfiguration,
-      ops.configuration.update({ view: { allowColor } }),
+      ops.configuration.update({ view: { allowColor, fitToOutputWidth } }),
       ops.configuration.setConfiguration,
     )();
     // log start

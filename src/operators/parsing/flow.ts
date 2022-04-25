@@ -61,7 +61,7 @@ export class ParserFlowOperators {
     );
     const parseName = this.parsers.base.parseName.bind(this.parsers.base);
     return [
-      [{}, parseId],
+      [{ shrinkable: true, shrinkableMin: 13 }, parseId],
       [
         {},
         ({ width = 4, align = 'right' } = {}) =>
@@ -83,8 +83,8 @@ export class ParserFlowOperators {
           return await parseFlowStep(opts)(flowStep);
         },
       ],
-      [{}, parseName],
-      [{}, parseEntityDate],
+      [{ shrinkable: true, shrinkableMin: 5, shrinkStr: '...' }, parseName],
+      [{ shrinkable: true, shrinkStr: '...' }, parseEntityDate],
     ];
   }
 

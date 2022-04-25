@@ -94,6 +94,12 @@ export class ConfigurationOperators {
         }
         let view: IConfigurationState['view'] = configuration.view;
         if (partial.view !== undefined) {
+          for (const k of Object.keys(partial.view)) {
+            const key = k as keyof IPartialConfiguration['view'];
+            if (partial.view[key] === undefined) {
+              delete partial.view[key];
+            }
+          }
           view = { ...view, ...partial.view };
         }
         return {
@@ -139,6 +145,9 @@ export class ConfigurationOperators {
         const view: IConfigurationState['view'] = configuration.view;
         if (partial.allowColor !== undefined) {
           view.allowColor = partial.allowColor;
+        }
+        if (partial.fitToOutputWidth !== undefined) {
+          view.fitToOutputWidth = partial.fitToOutputWidth;
         }
         return {
           storage,
@@ -199,6 +208,7 @@ export class ConfigurationOperators {
         },
         view: {
           allowColor: true,
+          fitToOutputWidth: true,
         },
         files: [defaultFilePath],
       };
