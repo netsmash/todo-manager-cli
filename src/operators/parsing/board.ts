@@ -49,7 +49,7 @@ export class ParserBoardOperators {
     );
     const parseName = this.parsers.base.parseName.bind(this.parsers.base);
     return [
-      [{}, parseId],
+      [{ shrinkable: true, shrinkableMin: 13 }, parseId],
       [{}, parseFlow],
       [
         {},
@@ -62,8 +62,8 @@ export class ParserBoardOperators {
             return result;
           },
       ],
-      [{}, parseName],
-      [{}, parseEntityDate],
+      [{ shrinkable: true, shrinkableMin: 5, shrinkStr: '...' }, parseName],
+      [{ shrinkable: true, shrinkStr: '...' }, parseEntityDate],
     ];
   }
 
