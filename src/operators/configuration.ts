@@ -78,7 +78,8 @@ export class ConfigurationOperators {
     return (filePath: string) => (str: string): string => {
       return str
         .replace('${HOME}', homedir())
-        .replace('${DIRNAME}', dirname(filePath));
+        .replace('${DIRNAME}', dirname(filePath))
+        .replace('${FILENAME}', filePath);
     }
   }
 
