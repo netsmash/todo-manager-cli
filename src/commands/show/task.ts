@@ -26,8 +26,15 @@ export const showTask = commandAction<TShowTaskArgs, IShowTaskOps>(
     if (stepsSelector !== undefined) {
       taskFilters.steps = new Map();
       for (const stepSelector of stepsSelector) {
-        const flowStep = await ops.flowStep.getOrFailByRegExp(stepSelector);
-        taskFilters.steps.set(flowStep.id, flowStep);
+        const flowStepCollection = await ops.flowStep.getCollectionByRegExp(stepSelector);
+        if (taskFilters.steps === undefined) {
+          taskFilters.steps = flowStepCollection;
+        } else {
+          taskFilters.steps = ops.entity.mergeCollections([
+            taskFilters.steps,
+            flowStepCollection
+          ]);
+        }
       }
     }
     if (filter !== undefined) {
@@ -35,11 +42,10 @@ export const showTask = commandAction<TShowTaskArgs, IShowTaskOps>(
     }
 
     const parseTasks = asyncPipe(
-      () => taskFilters,
       ops.task.getCollectionWithFilters,
       ops.parsing.task.collection,
     );
-    ops.terminal.out(await parseTasks());
+    ops.terminal.out(await parseTasks(taskFilters));
   },
 );
 
