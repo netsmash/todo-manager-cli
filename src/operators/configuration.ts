@@ -75,18 +75,19 @@ export class ConfigurationOperators {
   }
 
   public get replaceVariables() {
-    return (filePath: string) => (str: string): string => {
-      return str
-        .replace('${HOME}', homedir())
-        .replace('${DIRNAME}', dirname(filePath))
-        .replace('${FILENAME}', filePath);
-    }
+    return (filePath: string) =>
+      (str: string): string => {
+        return str
+          .replace('${HOME}', homedir())
+          .replace('${DIRNAME}', dirname(filePath))
+          .replace('${FILENAME}', filePath);
+      };
   }
 
   public get sanitizePath() {
     return (path: string): string => {
       return normalizePath(path);
-    }
+    };
   }
 
   public get write() {
@@ -177,7 +178,10 @@ export class ConfigurationOperators {
           storage,
           view,
           files: Array.from(
-            new Set([...(configuration.files || []), ...(partial.files || []).map(sanitizePath)]),
+            new Set([
+              ...(configuration.files || []),
+              ...(partial.files || []).map(sanitizePath),
+            ]),
           ),
         };
       };
@@ -193,7 +197,7 @@ export class ConfigurationOperators {
       let configuration: IConfigurationFile | undefined;
       try {
         const configurationStr = replaceVariables(filePath)(
-          await readFile(filePath, { encoding: 'utf-8' })
+          await readFile(filePath, { encoding: 'utf-8' }),
         );
         configuration = YAML.parse(configurationStr);
       } catch (error) {
@@ -220,7 +224,7 @@ export class ConfigurationOperators {
         await mkdir(dirPath, { recursive: true });
         configurationFile = defaultConfiguration as IConfigurationFile;
         configurationFile.storage.path = replaceVariables(defaultFilePath)(
-          configurationFile.storage.path
+          configurationFile.storage.path,
         );
         await write(configurationFile);
       } else {
