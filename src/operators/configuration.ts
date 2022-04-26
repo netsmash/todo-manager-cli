@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import YAML from 'yaml';
 import { mkdir, writeFile, readFile } from 'fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname, normalize as normalizePath } from 'node:path';
 import {
   IConfiguration,
   IConfigurationFile,
@@ -38,7 +38,8 @@ export class ConfigurationOperators {
   }
 
   public get filePath() {
-    return join(this.dirPath, this.fileName);
+    const sanitizePath = this.sanitizePath.bind(this);
+    return sanitizePath(join(this.dirPath, this.fileName));
   }
 
   public get getConfiguration() {
@@ -73,6 +74,22 @@ export class ConfigurationOperators {
     };
   }
 
+  public get replaceVariables() {
+    return (filePath: string) =>
+      (str: string): string => {
+        return str
+          .replace('${HOME}', homedir())
+          .replace('${DIRNAME}', dirname(filePath))
+          .replace('${FILENAME}', filePath);
+      };
+  }
+
+  public get sanitizePath() {
+    return (path: string): string => {
+      return normalizePath(path);
+    };
+  }
+
   public get write() {
     const yamlOptions = this.yamlOptions;
     const filePath = this.filePath;
@@ -83,6 +100,7 @@ export class ConfigurationOperators {
   }
 
   public get update() {
+    const sanitizePath = this.sanitizePath.bind(this);
     return (
         partial: IPartialConfiguration | IConfiguration | null | undefined,
       ) =>
@@ -91,6 +109,7 @@ export class ConfigurationOperators {
         let storage: IConfiguration['storage'] = configuration.storage;
         if (partial.storage !== undefined) {
           storage = { ...storage, ...partial.storage };
+          storage.path = sanitizePath(storage.path);
         }
         let view: IConfigurationState['view'] = configuration.view;
         if (partial.view !== undefined) {
@@ -110,6 +129,7 @@ export class ConfigurationOperators {
   }
 
   public get updateState() {
+    const sanitizePath = this.sanitizePath.bind(this);
     return (
         partial: IPartialConfiguration | IConfiguration | null | undefined,
       ) =>
@@ -118,6 +138,8 @@ export class ConfigurationOperators {
         let storage: IConfigurationState['storage'] = configuration.storage;
         if (partial.storage !== undefined) {
           storage = { ...storage, ...partial.storage };
+          storage.path = sanitizePath(storage.path);
+          storage.file = sanitizePath(storage.file);
         }
         let view: IConfigurationState['view'] = configuration.view;
         if (partial.view !== undefined) {
@@ -132,6 +154,7 @@ export class ConfigurationOperators {
   }
 
   public get updateStateFromFile() {
+    const sanitizePath = this.sanitizePath.bind(this);
     return (
         partial: IPartialConfigurationFile | null | undefined,
         filePath: string,
@@ -141,6 +164,8 @@ export class ConfigurationOperators {
         let storage: IConfigurationState['storage'] = configuration.storage;
         if (partial.storage !== undefined) {
           storage = { ...partial.storage, file: filePath };
+          storage.path = sanitizePath(storage.path);
+          storage.file = sanitizePath(storage.file);
         }
         const view: IConfigurationState['view'] = configuration.view;
         if (partial.allowColor !== undefined) {
@@ -153,7 +178,10 @@ export class ConfigurationOperators {
           storage,
           view,
           files: Array.from(
-            new Set([...(configuration.files || []), ...(partial.files || [])]),
+            new Set([
+              ...(configuration.files || []),
+              ...(partial.files || []).map(sanitizePath),
+            ]),
           ),
         };
       };
@@ -161,15 +189,16 @@ export class ConfigurationOperators {
 
   public get read() {
     const defaultFilePath = this.filePath;
+    const replaceVariables = this.replaceVariables.bind(this);
 
     return async (
       filePath: string = defaultFilePath,
     ): Promise<IConfigurationFile | undefined> => {
       let configuration: IConfigurationFile | undefined;
       try {
-        const configurationStr = (
-          await readFile(filePath, { encoding: 'utf-8' })
-        ).replace('${HOME}', homedir());
+        const configurationStr = replaceVariables(filePath)(
+          await readFile(filePath, { encoding: 'utf-8' }),
+        );
         configuration = YAML.parse(configurationStr);
       } catch (error) {
         // assume file do not exists
@@ -180,6 +209,8 @@ export class ConfigurationOperators {
 
   public get getOrCreate() {
     const defaultFilePath = this.filePath;
+    const sanitizePath = this.sanitizePath.bind(this);
+    const replaceVariables = this.replaceVariables.bind(this);
     const dirPath = this.dirPath;
     const write = this.write.bind(this);
     const read = this.read.bind(this);
@@ -192,9 +223,8 @@ export class ConfigurationOperators {
         // assume file do not exists
         await mkdir(dirPath, { recursive: true });
         configurationFile = defaultConfiguration as IConfigurationFile;
-        configurationFile.storage.path = configurationFile.storage.path.replace(
-          '${HOME}',
-          homedir(),
+        configurationFile.storage.path = replaceVariables(defaultFilePath)(
+          configurationFile.storage.path,
         );
         await write(configurationFile);
       } else {
@@ -210,12 +240,13 @@ export class ConfigurationOperators {
           allowColor: true,
           fitToOutputWidth: true,
         },
-        files: [defaultFilePath],
+        files: [],
       };
       const alreadyVisited: Set<string> = new Set();
-      let files: string[] = configurationState.files;
+      let files: string[] = [sanitizePath(defaultFilePath)];
       while (files.length > 0) {
-        for (const filePath of files) {
+        for (const _filePath of files) {
+          const filePath = sanitizePath(_filePath);
           // get partial conf
           const partial = await read(filePath);
           // update configuration
