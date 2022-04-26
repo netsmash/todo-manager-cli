@@ -235,6 +235,7 @@ export class ParserBaseOperators {
         allowColor,
         shrinkable,
         shrinkStr = '',
+        color = 'grey',
       } = {}) =>
       async (entity) => {
         let result = ``;
@@ -255,7 +256,44 @@ export class ParserBaseOperators {
           result = result.substring(0, width);
         }
         if (await isColorAllowed(allowColor)) {
-          result = setColor(`grey`)(result);
+          result = setColor(color)(result);
+        }
+        return result;
+      };
+  }
+
+  public get parseExactEntityDate(): TItemParser<IEntity> {
+    const isColorAllowed = this.isColorAllowed.bind(this);
+    const setColor = this.setColor.bind(this);
+    const len = this.len.bind(this);
+    return ({
+        width,
+        align = 'left',
+        allowColor,
+        shrinkable,
+        shrinkStr = '',
+        color = 'grey',
+      } = {}) =>
+      async (entity) => {
+        let result = ``;
+        if (!entityIsSaved(entity)) {
+          result = `Not saved yet.`;
+        } else if (entity.updatedAt) {
+          result = `Updated at ${entity.updatedAt.toISOString()}`;
+        } else {
+          result = `Created at ${entity.createdAt.toISOString()}`;
+        }
+        let resultLen = len(result);
+        if (width === undefined) {
+          // Do nothing
+        } else if (resultLen <= width) {
+          result = StringUtils.align(width, align)(result);
+        } else if (shrinkable) {
+          result = result.substring(0, width - len(shrinkStr)) + shrinkStr;
+          result = result.substring(0, width);
+        }
+        if (await isColorAllowed(allowColor)) {
+          result = setColor(color)(result);
         }
         return result;
       };
@@ -269,6 +307,7 @@ export class ParserBaseOperators {
         width,
         align = 'left',
         allowColor,
+        color = `grey`,
         shrinkable,
         shrinkStr = '',
       } = {}) =>
@@ -285,7 +324,7 @@ export class ParserBaseOperators {
           result = result.substring(0, width);
         }
         if (await isColorAllowed(allowColor)) {
-          result = setColor(`grey`)(result);
+          result = setColor(color)(result);
         }
         return result;
       };
