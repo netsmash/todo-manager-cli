@@ -226,11 +226,12 @@ export class ParserTaskOperators {
   }
 
   public get detail() {
+    const setColor = this.parsers.base.setColor.bind(this.parsers.base);
     const parseFlowStep = this.parsers.flowStep.parseForTask.bind(
       this.parsers.flowStep,
     );
     const parseId = this.parsers.base.parseId.bind(this.parsers.base);
-    const parseEntityDate = this.parsers.base.parseEntityDate.bind(
+    const parseExactEntityDate = this.parsers.base.parseExactEntityDate.bind(
       this.parsers.base,
     );
     const parseName = this.parsers.base.parseName.bind(this.parsers.base);
@@ -244,16 +245,18 @@ export class ParserTaskOperators {
 
       if (entityIsSaved(task)) {
         const flowStepStr = await parseFlowStep()(task);
-        result += `${flowStepStr} ${task.name}`.trim();
-        const idStr = await parseId()(task);
-        const dateStr = await parseEntityDate()(task);
-        result += `\n\n${idStr} ${dateStr}`;
+        const idStr = await parseId({ color: 'blueBright' })(task);
+        const dateStr = await parseExactEntityDate({ color: 'blueBright' })(
+          task,
+        );
+        result += `${idStr} ${flowStepStr} ${dateStr}`.trim();
+        result += `\n${setColor(`whiteBright`)(task.name.trim())}`;
         const board = await getTaskBoard(task);
         if (board === undefined) {
-          result += `\nThis task is orphan`;
+          result += `\n\nThis task is orphan`;
         } else {
           const boardNameStr = await parseName()(board);
-          result += `\nBoard: ${boardNameStr}`;
+          result += `\n\nBoard: ${boardNameStr}`;
         }
       } else {
         result += `${task.name}`;

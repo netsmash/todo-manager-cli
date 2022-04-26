@@ -123,9 +123,10 @@ export class ParserBoardOperators {
   }
 
   public get detail() {
+    const setColor = this.parsers.base.setColor.bind(this.parsers.base);
     const parseFlow = this.parsers.flow.parseForBoard.bind(this.parsers.flow);
     const parseId = this.parsers.base.parseId.bind(this.parsers.base);
-    const parseEntityDate = this.parsers.base.parseEntityDate.bind(
+    const parseExactEntityDate = this.parsers.base.parseExactEntityDate.bind(
       this.parsers.base,
     );
     return async (board: IBoard) => {
@@ -133,10 +134,12 @@ export class ParserBoardOperators {
 
       if (entityIsSaved(board)) {
         const flowStr = await parseFlow()(board);
-        result += `${flowStr} ${board.name}`.trim();
-        const idStr = await parseId()(board);
-        const dateStr = await parseEntityDate()(board);
-        result += `\n\n${idStr} ${dateStr}`;
+        const idStr = await parseId({ color: 'blueBright' })(board);
+        const dateStr = await parseExactEntityDate({ color: 'blueBright' })(
+          board,
+        );
+        result += `${idStr} ${flowStr} ${dateStr}`.trim();
+        result += `\n${setColor(`whiteBright`)(board.name.trim())}`;
       } else {
         result += `${board.name}`;
         result += `\n\nNot saved yet`;

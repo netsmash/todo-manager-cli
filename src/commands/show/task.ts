@@ -26,13 +26,15 @@ export const showTask = commandAction<TShowTaskArgs, IShowTaskOps>(
     if (stepsSelector !== undefined) {
       taskFilters.steps = new Map();
       for (const stepSelector of stepsSelector) {
-        const flowStepCollection = await ops.flowStep.getCollectionByRegExp(stepSelector);
+        const flowStepCollection = await ops.flowStep.getCollectionByRegExp(
+          stepSelector,
+        );
         if (taskFilters.steps === undefined) {
           taskFilters.steps = flowStepCollection;
         } else {
           taskFilters.steps = ops.entity.mergeCollections([
             taskFilters.steps,
-            flowStepCollection
+            flowStepCollection,
           ]);
         }
       }
