@@ -3,6 +3,7 @@ export namespace ParsingIdentificators {
   export const Cache = Symbol();
   export const Table = Symbol();
   export const Configuration = Symbol();
+  export const Entity = Symbol();
   export const Task = Symbol();
   export const FlowStep = Symbol();
   export const Board = Symbol();

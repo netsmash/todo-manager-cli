@@ -13,6 +13,7 @@ export const addShowCommands = (showCommand: Command): Command => {
       '-f, --filter <regexp>',
       'Filter results by matching regexp with id and title. This argument is ignored if the [board-id] argument is provided.',
     )
+    .option('-q, --quiet', 'Show only the IDs.')
     .action(showBoard);
 
   showCommand
@@ -31,6 +32,7 @@ export const addShowCommands = (showCommand: Command): Command => {
       '-s, --steps <steps...>',
       'Filter results by a steps. This argument is ignored if the [task-id] argument is provided.',
     )
+    .option('-q, --quiet', 'Show only the IDs.')
     .action(showTask);
 
   showCommand
@@ -41,6 +43,7 @@ export const addShowCommands = (showCommand: Command): Command => {
       '-f, --filter <regexp>',
       'Filter results by matching regexp with id and name. This argument is ignored if the [flow-id] argument is provided.',
     )
+    .option('-q, --quiet', 'Show only the IDs.')
     .action(showFlow);
 
   showCommand
