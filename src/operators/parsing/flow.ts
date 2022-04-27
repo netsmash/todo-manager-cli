@@ -61,7 +61,7 @@ export class ParserFlowOperators {
     );
     const parseName = this.parsers.base.parseName.bind(this.parsers.base);
     return [
-      [{}, parseId],
+      [{ shrinkable: true, shrinkableMin: 13 }, parseId],
       [
         {},
         ({ width = 4, align = 'right' } = {}) =>
@@ -83,8 +83,8 @@ export class ParserFlowOperators {
           return await parseFlowStep(opts)(flowStep);
         },
       ],
-      [{}, parseName],
-      [{}, parseEntityDate],
+      [{ shrinkable: true, shrinkableMin: 5, shrinkStr: '...' }, parseName],
+      [{ shrinkable: true, shrinkStr: '...' }, parseEntityDate],
     ];
   }
 
@@ -144,21 +144,24 @@ export class ParserFlowOperators {
   }
 
   public get detail() {
+    const setColor = this.parsers.base.setColor.bind(this.parsers.base);
     const parseFlowStep = this.parsers.flowStep.parseForFlowDetail.bind(
       this.parsers.flowStep,
     );
     const parseId = this.parsers.base.parseId.bind(this.parsers.base);
-    const parseEntityDate = this.parsers.base.parseEntityDate.bind(
+    const parseExactEntityDate = this.parsers.base.parseExactEntityDate.bind(
       this.parsers.base,
     );
     return async (flow: IFlow) => {
       let result = '';
 
       if (entityIsSaved(flow)) {
-        result += `${flow.name}`.trim();
-        const idStr = await parseId()(flow);
-        const dateStr = await parseEntityDate()(flow);
-        result += `\n\n${idStr} ${dateStr}`;
+        const idStr = await parseId({ color: 'blueBright' })(flow);
+        const dateStr = await parseExactEntityDate({ color: 'blueBright' })(
+          flow,
+        );
+        result += `${idStr} ${dateStr}`.trim();
+        result += `\n${setColor(`whiteBright`)(flow.name.trim())}`;
       } else {
         result += `${flow.name}`;
         result += `\n\nNot saved yet`;

@@ -1,9 +1,13 @@
-import { MaybePromise } from 'todo-manager';
+import { MaybePromise, TFlowStepColor } from 'todo-manager';
 
 export interface IItemParserOptions {
   width?: number;
   align?: 'left' | 'center' | 'right';
   allowColor?: boolean;
+  color?: TFlowStepColor;
+  shrinkable?: boolean;
+  shrinkableMin?: number;
+  shrinkStr?: string;
 }
 
 export interface ITableParserOptions {

@@ -1,14 +1,22 @@
 import { inject, injectable } from 'inversify';
-import { EntityCollection, entityIsSaved, IBoard, ISaved } from 'todo-manager';
+import {
+  EntityCollection,
+  entityIsSaved,
+  IBoard,
+  Id,
+  IFlowStep,
+  ISaved,
+} from 'todo-manager';
 import { Identificators } from '../../identificators';
 import { asyncPipe, StringUtils } from '../../lib';
 import { TConfigurationOperators } from '../configuration';
-import { TColumn } from '../../models';
+import { ITableParserOptions, TColumn } from '../../models';
 import { TParserBaseOperators } from './base';
 import { TParserTableOperators } from './table';
 import { ParsingIdentificators } from './identificators';
 import { TBoardOperators, TTaskOperators } from '../todo-manager';
 import { TParserFlowOperators } from './flow';
+import { TParserFlowStepOperators } from './flow-step';
 
 @injectable()
 export class ParserBoardOperators {
@@ -20,6 +28,7 @@ export class ParserBoardOperators {
     base: TParserBaseOperators;
     table: TParserTableOperators;
     flow: TParserFlowOperators;
+    flowStep: TParserFlowStepOperators;
   };
   public constructor(
     @inject(Identificators.ConfigurationOperators)
@@ -29,6 +38,7 @@ export class ParserBoardOperators {
     @inject(ParsingIdentificators.Base) pBase: TParserBaseOperators,
     @inject(ParsingIdentificators.Table) pTable: TParserTableOperators,
     @inject(ParsingIdentificators.Flow) pFlow: TParserFlowOperators,
+    @inject(ParsingIdentificators.FlowStep) pFlowStep: TParserFlowStepOperators,
   ) {
     this.tm = {
       task: tmTask,
@@ -38,6 +48,7 @@ export class ParserBoardOperators {
       base: pBase,
       table: pTable,
       flow: pFlow,
+      flowStep: pFlowStep,
     };
   }
 
@@ -49,7 +60,7 @@ export class ParserBoardOperators {
     );
     const parseName = this.parsers.base.parseName.bind(this.parsers.base);
     return [
-      [{}, parseId],
+      [{ shrinkable: true, shrinkableMin: 13 }, parseId],
       [{}, parseFlow],
       [
         {},
@@ -62,8 +73,8 @@ export class ParserBoardOperators {
             return result;
           },
       ],
-      [{}, parseName],
-      [{}, parseEntityDate],
+      [{ shrinkable: true, shrinkableMin: 5, shrinkStr: '...' }, parseName],
+      [{ shrinkable: true, shrinkStr: '...' }, parseEntityDate],
     ];
   }
 
@@ -104,6 +115,83 @@ export class ParserBoardOperators {
     };
   }
 
+  public get tasksByStepsTable() {
+    const hrChar = '─';
+    const fillChar = '■';
+    const parseTable = this.parsers.table.parseTable.bind(this.parsers.table);
+    const parseFlowStep = this.parsers.flowStep.parseName.bind(
+      this.parsers.flowStep,
+    );
+    return async (board: IBoard & ISaved) => {
+      // Define table options
+      const tableOptions: ITableParserOptions = {
+        width: process.stdout.columns,
+        gap: 1,
+        gapFillStr: ' ',
+      };
+
+      // Define table data
+      const flow = board.flow;
+      const numTasksByStep: Map<Id, number> = new Map();
+      board.taskSteps.forEach((flowStepId) => {
+        const current = numTasksByStep.get(flowStepId) || 0;
+        numTasksByStep.set(flowStepId, current + 1);
+      });
+
+      const data: Iterable<T> = flow.order.map((flowStepId) => {
+        return [
+          flow.steps.get(flowStepId) as IFlowStep & ISaved,
+          numTasksByStep.get(flowStepId) || 0,
+        ];
+      });
+
+      // Define table structure
+      type T = [IFlowStep, number];
+
+      const columns: Iterable<TColumn<T>> = [
+        [
+          {},
+          (ops) =>
+            async ([flowStep]) =>
+              await parseFlowStep(ops)(flowStep),
+        ],
+        [
+          {},
+          () =>
+            async ([_, x]) =>
+              String(x),
+        ],
+        [
+          {},
+          () =>
+            async ([_, x]) => {
+              const n = board.tasks.size;
+              const N = 10;
+              const Np = Math.floor((x * N) / n);
+              const filledBar = StringUtils.repeatUntilLength(fillChar)(Np);
+              const emptyBar = StringUtils.repeatUntilLength(hrChar)(N - Np);
+              return `[${filledBar}${emptyBar}]`;
+            },
+        ],
+        [
+          {},
+          ({ width } = {}) =>
+            async ([_, x]) => {
+              const p = (100 * x) / board.tasks.size;
+              let result = `${p.toFixed(2)} %`;
+              if (width !== undefined) {
+                result = StringUtils.align(width, 'right')(result);
+              }
+              return result;
+            },
+        ],
+      ];
+
+      // Parse table
+      return await parseTable(tableOptions)(columns)(data)(data);
+    };
+  }
+
   public get collection() {
     const getTableParser = this.getTableParser.bind(this);
     return async (collection: EntityCollection<IBoard & ISaved>) => {
@@ -123,20 +211,24 @@ export class ParserBoardOperators {
   }
 
   public get detail() {
+    const setColor = this.parsers.base.setColor.bind(this.parsers.base);
     const parseFlow = this.parsers.flow.parseForBoard.bind(this.parsers.flow);
     const parseId = this.parsers.base.parseId.bind(this.parsers.base);
-    const parseEntityDate = this.parsers.base.parseEntityDate.bind(
+    const parseExactEntityDate = this.parsers.base.parseExactEntityDate.bind(
       this.parsers.base,
     );
+    const parseNumTaskByStepsTable = this.tasksByStepsTable.bind(this);
     return async (board: IBoard) => {
       let result = '';
 
       if (entityIsSaved(board)) {
         const flowStr = await parseFlow()(board);
-        result += `${flowStr} ${board.name}`.trim();
-        const idStr = await parseId()(board);
-        const dateStr = await parseEntityDate()(board);
-        result += `\n\n${idStr} ${dateStr}`;
+        const idStr = await parseId({ color: 'blueBright' })(board);
+        const dateStr = await parseExactEntityDate({ color: 'blueBright' })(
+          board,
+        );
+        result += `${idStr} ${flowStr} ${dateStr}`.trim();
+        result += `\n${setColor(`whiteBright`)(board.name.trim())}`;
       } else {
         result += `${board.name}`;
         result += `\n\nNot saved yet`;
@@ -145,6 +237,20 @@ export class ParserBoardOperators {
       if (board.description !== undefined) {
         result += `\n\n${board.description}`;
       }
+
+      if (!entityIsSaved(board)) {
+        // Do nothing
+      } else if (board.tasks.size > 0) {
+        const numTasksByStepTable = await parseNumTaskByStepsTable(board);
+        result +=
+          `\n\nThis board has ${setColor('blueBright')(
+            String(board.tasks.size),
+          )}` + ` associated tasks in the following distribution:`;
+        result += `\n\n${numTasksByStepTable}`;
+      } else {
+        result += `\n\nThis board has not associated tasks.`;
+      }
+
       return result;
     };
   }

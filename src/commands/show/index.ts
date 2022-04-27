@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { showBoard } from './board';
 import { showFlow } from './flow';
 import { showTask } from './task';
+import { showConfiguration } from './configuration';
 
 export const addShowCommands = (showCommand: Command): Command => {
   showCommand
@@ -12,6 +13,7 @@ export const addShowCommands = (showCommand: Command): Command => {
       '-f, --filter <regexp>',
       'Filter results by matching regexp with id and title. This argument is ignored if the [board-id] argument is provided.',
     )
+    .option('-q, --quiet', 'Show only the IDs.')
     .action(showBoard);
 
   showCommand
@@ -30,6 +32,7 @@ export const addShowCommands = (showCommand: Command): Command => {
       '-s, --steps <steps...>',
       'Filter results by a steps. This argument is ignored if the [task-id] argument is provided.',
     )
+    .option('-q, --quiet', 'Show only the IDs.')
     .action(showTask);
 
   showCommand
@@ -40,7 +43,14 @@ export const addShowCommands = (showCommand: Command): Command => {
       '-f, --filter <regexp>',
       'Filter results by matching regexp with id and name. This argument is ignored if the [flow-id] argument is provided.',
     )
+    .option('-q, --quiet', 'Show only the IDs.')
     .action(showFlow);
+
+  showCommand
+    .command('configuration')
+    .description(`Shows information about the current configuration.`)
+    .aliases(['config', 'conf'])
+    .action(showConfiguration);
 
   return showCommand;
 };

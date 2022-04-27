@@ -110,6 +110,9 @@ export class TaskOperators extends TaskOperatorsBase {
 
   /* First sort by board. Undefined board last.
    * If both have no board, sort by date.
+   * If one have board and the other has not, first the one with board.
+   * If boards are different, by board creation date.
+   * - On same time, rely on comparison of the boards as entites.
    * If both are in same board sort by step. Undefined step last.
    * - If both have no steps, sort by date.
    * - If both have steps, sort by step order.
@@ -144,7 +147,14 @@ export class TaskOperators extends TaskOperatorsBase {
         } else if (boardA === undefined && boardB === undefined) {
           // skip if chain
         } else if ((boardA as IBoard).id !== (boardB as IBoard).id) {
-          return compareEntities(boardA as IBoard, boardB as IBoard);
+          const A = boardA as IBoard & ISaved;
+          const B = boardB as IBoard & ISaved;
+          if (A.createdAt.getTime() < B.createdAt.getTime()) {
+            return -1;
+          } else if (A.createdAt.getTime() > B.createdAt.getTime()) {
+            return 1;
+          }
+          return compareEntities(A, B);
         } else if ((boardA as IBoard).id === (boardB as IBoard).id) {
           const flow = (boardA as IBoard).flow;
 

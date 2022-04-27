@@ -10,6 +10,13 @@ This library provides a CLI tool to manage locally "to do" tasks.
 npm install -g todo-manager-cli
 ```
 
+> *Warning*: During the development phase (prior to `v1.0.0`) this software can
+experiment changes without being notified in a change log.
+>
+> So: please, keep in mind that some changes in your config files or data source
+files could be needed when update the version.
+Otherwise, wait until the first stable version `v1.0.0`.
+
 ## Usage
 
 ```
@@ -56,15 +63,15 @@ Also, it can be configured to globally or locally, get the source data files fro
 
 First time you run the command, a configuration file will be created on `~/.config/todo-manager.yml`. This configuration can be manually edited.
 
-### Overrides
+### Overriding configuration
 
 By adding the line
 
 ```
-overrides: ["./tm.config.yml"]
+files: ["./tm.config.yml"]
 ```
 
-on the main configuration file, you can define a list of locations were the utility will look for a overriding configuration files.
+on a configuration file, you can define a list of overriding configuration files.
 If the file is found, the configuration will be override.
 
 In this particular example, the tool will look for a local file `./tm.config.yml` with respect the location where command is launched.

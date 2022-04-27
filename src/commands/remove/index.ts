@@ -5,7 +5,7 @@ import { removeFlow } from './flow';
 
 export const addRemoveCommands = (removeCommand: Command): Command => {
   removeCommand
-    .command('task [task...]')
+    .command('task [task...]', { isDefault: true })
     .alias('t')
     .description(`Delete one or more tasks.`)
     .option('-y, --confirm', 'Do not ask for confirmation.')

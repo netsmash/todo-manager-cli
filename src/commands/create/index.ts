@@ -5,7 +5,7 @@ import { createFlow } from './flow';
 
 export const addCreateCommands = (createCommand: Command): Command => {
   createCommand
-    .command('task [task-id]')
+    .command('task [task-id]', { isDefault: true })
     .alias('t')
     .description(`Creates a task.`)
     .option(
