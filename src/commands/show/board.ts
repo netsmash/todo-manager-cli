@@ -4,13 +4,17 @@ import { asyncPipe, commandAction } from '../../lib';
 type TShowBoardArgs = [string | undefined];
 interface IShowBoardOps {
   filter?: string;
+  quiet?: boolean;
 }
 export const showBoard = commandAction<TShowBoardArgs, IShowBoardOps>(
-  async ({ args: [boardId], options: { filter } }) => {
+  async ({
+    args: [boardId],
+    options: { filter, quiet: showOnlyIds = false },
+  }) => {
     const ops = await getOperators();
 
     if (boardId !== undefined) {
-      return showBoardDetail(boardId);
+      return showBoardDetail(boardId, { quiet: showOnlyIds });
     }
 
     const getBoards = async () => {
@@ -20,13 +24,28 @@ export const showBoard = commandAction<TShowBoardArgs, IShowBoardOps>(
       return ops.board.list();
     };
 
-    const parseBoards = asyncPipe(getBoards, ops.parsing.board.collection);
+    const parseBoards = asyncPipe(
+      getBoards,
+      showOnlyIds
+        ? ops.parsing.entity.collectionIds
+        : ops.parsing.board.collection,
+    );
     ops.terminal.out(await parseBoards());
   },
 );
 
-const showBoardDetail = async (regex: string) => {
+interface IShowBoardDetailOps {
+  quiet?: boolean;
+}
+const showBoardDetail = async (
+  regex: string,
+  { quiet: showOnlyId = false }: IShowBoardDetailOps = {},
+) => {
   const ops = await getOperators();
   const board = await ops.board.getOrFailByRegExp(regex);
-  ops.terminal.out(await ops.parsing.board.detail(board));
+  ops.terminal.out(
+    showOnlyId
+      ? await ops.parsing.entity.id(board)
+      : await ops.parsing.board.detail(board),
+  );
 };

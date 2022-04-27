@@ -7,16 +7,22 @@ interface IShowTaskOps {
   filter?: string;
   board?: string;
   steps?: string[];
+  quiet?: boolean;
 }
 export const showTask = commandAction<TShowTaskArgs, IShowTaskOps>(
   async ({
     args: [taskId],
-    options: { filter, board: boardSelector, steps: stepsSelector },
+    options: {
+      filter,
+      board: boardSelector,
+      steps: stepsSelector,
+      quiet: showOnlyIds = false,
+    },
   }) => {
     const ops = await getOperators();
 
     if (taskId !== undefined) {
-      return showTaskDetail(taskId);
+      return showTaskDetail(taskId, { quiet: showOnlyIds });
     }
     const taskFilters: ITaskFilters = {};
 
@@ -45,14 +51,26 @@ export const showTask = commandAction<TShowTaskArgs, IShowTaskOps>(
 
     const parseTasks = asyncPipe(
       ops.task.getCollectionWithFilters,
-      ops.parsing.task.collection,
+      showOnlyIds
+        ? ops.parsing.entity.collectionIds
+        : ops.parsing.task.collection,
     );
     ops.terminal.out(await parseTasks(taskFilters));
   },
 );
 
-const showTaskDetail = async (regex: string) => {
+interface IShowTaskDetailOps {
+  quiet?: boolean;
+}
+const showTaskDetail = async (
+  regex: string,
+  { quiet: showOnlyId = false }: IShowTaskDetailOps = {},
+) => {
   const ops = await getOperators();
   const task = await ops.task.getOrFailByRegExp(regex);
-  ops.terminal.out(await ops.parsing.task.detail(task));
+  ops.terminal.out(
+    showOnlyId
+      ? await ops.parsing.entity.id(task)
+      : await ops.parsing.task.detail(task),
+  );
 };

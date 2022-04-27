@@ -11,6 +11,7 @@ import {
   ParserConfigurationOperators,
   TParserConfigurationOperators,
 } from './configuration';
+import { ParserEntityOperators, TParserEntityOperators } from './entity';
 
 // DO NOT EXPORT, so we avoid circular dependencies
 // export * from './identificators';
@@ -20,6 +21,7 @@ export * from './flow-step';
 
 export interface IParsingOperators {
   configuration: TParserConfigurationOperators;
+  entity: TParserEntityOperators;
   task: TParserTaskOperators;
   flowStep: TParserFlowStepOperators;
   board: TParserBoardOperators;
@@ -44,6 +46,10 @@ export const parsingBinding = (container: interfaces.Container) => {
     .to(ParserConfigurationOperators);
 
   container
+    .bind<TParserEntityOperators>(ParsingIdentificators.Entity)
+    .to(ParserEntityOperators);
+
+  container
     .bind<TParserTaskOperators>(ParsingIdentificators.Task)
     .to(ParserTaskOperators);
 
@@ -66,6 +72,7 @@ export const getParsingOperators = (
   configuration: container.get<TParserConfigurationOperators>(
     ParsingIdentificators.Configuration,
   ),
+  entity: container.get<TParserEntityOperators>(ParsingIdentificators.Entity),
   task: container.get<TParserTaskOperators>(ParsingIdentificators.Task),
   flowStep: container.get<TParserFlowStepOperators>(
     ParsingIdentificators.FlowStep,
