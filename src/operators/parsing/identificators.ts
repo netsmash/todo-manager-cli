@@ -1,11 +1,11 @@
 export namespace ParsingIdentificators {
-  export const Base = Symbol();
-  export const Cache = Symbol();
-  export const Table = Symbol();
-  export const Configuration = Symbol();
-  export const Entity = Symbol();
-  export const Task = Symbol();
-  export const FlowStep = Symbol();
-  export const Board = Symbol();
-  export const Flow = Symbol();
+  export const Base = Symbol('BaseParsing');
+  export const Cache = Symbol('CacheParsing');
+  export const Table = Symbol('TableParsing');
+  export const Configuration = Symbol('ConfigurationParsing');
+  export const Entity = Symbol('EntityParsing');
+  export const Task = Symbol('TaskParsing');
+  export const FlowStep = Symbol('FlowStepParsing');
+  export const Board = Symbol('BoardParsing');
+  export const Flow = Symbol('FlowParsing');
 }

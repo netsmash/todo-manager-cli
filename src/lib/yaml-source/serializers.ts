@@ -13,7 +13,6 @@ import {
   NotImplementedError,
   SavingRequiredError,
 } from 'todo-manager';
-import { TFlowOperators } from '../todo-manager';
 import { Identificators } from '../../identificators';
 import {
   IBoardFileSource,
@@ -21,8 +20,8 @@ import {
   IFlowFileSource,
   IFlowStepFileSource,
   ITaskFileSource,
-} from '../../models';
-import { TLoggingOperators } from '../../operators';
+} from './models';
+import { TLoggingOperators, TFlowOperators } from '../../operators';
 import { asyncFilter, asyncPipe, asyncQueuedMap } from '../../lib';
 
 @injectable()

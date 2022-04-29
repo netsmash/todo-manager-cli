@@ -28,7 +28,6 @@ export class ParserConfigurationOperators {
     const fileNameColor = this.fileNameColor;
     const setColor = this.base.setColor.bind(this.base);
     const parseTitle = this.base.parseTitle.bind(this.base);
-    const parseStorage = this.parseStorage.bind(this);
     const parseView = this.parseView.bind(this);
     const config = this.config;
     return logging.logAsyncOperation('ParserConfiguration.main()')(
@@ -47,7 +46,6 @@ export class ParserConfigurationOperators {
           }
         }
         result += `\n\n` + (await parseView(state));
-        result += `\n\n` + (await parseStorage(state));
         return result;
       },
     );
@@ -68,6 +66,7 @@ export class ParserConfigurationOperators {
     };
   }
 
+  /*
   public get parseStorage() {
     const fileName = this.base.setColor(this.fileNameColor);
     const setColor = this.base.setColor.bind(this.base);
@@ -87,6 +86,7 @@ export class ParserConfigurationOperators {
       return result;
     };
   }
+  */
 }
 
 export type TParserConfigurationOperators = ParserConfigurationOperators;
