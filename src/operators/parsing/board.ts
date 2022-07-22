@@ -157,9 +157,10 @@ export class ParserBoardOperators {
         ],
         [
           {},
-          () =>
-            async ([_, x]) =>
-              String(x),
+          ({width} = {}) =>
+            async ([_, x]) => width
+              ? StringUtils.align(width, "right")(String(x))
+              : String(x),
         ],
         [
           {},
