@@ -51,7 +51,7 @@ export class ParserConfigurationOperators {
     );
   }
 
-  public get parseView() {
+  protected get parseView() {
     const setColor = this.base.setColor.bind(this.base);
     const parseTitle = this.base.parseTitle.bind(this.base);
     return async (state: IConfigurationState): Promise<string> => {
@@ -65,28 +65,8 @@ export class ParserConfigurationOperators {
       return result;
     };
   }
-
-  /*
-  public get parseStorage() {
-    const fileName = this.base.setColor(this.fileNameColor);
-    const setColor = this.base.setColor.bind(this.base);
-    const parseTitle = this.base.parseTitle.bind(this.base);
-    return async (state: IConfigurationState): Promise<string> => {
-      const remark = setColor(`blueBright`);
-      let result = ``;
-      result += await parseTitle({})('Storage');
-      const storage = state.storage;
-      result += `\nDefined at file ${fileName(storage.file)} .`;
-      if (storage.type === 'files' && storage.format === 'yaml') {
-        result += `\nEntities ${remark('stored locally')} using ${remark(
-          'YAML',
-        )}`;
-        result += ` at folder ${fileName(storage.path)} .`;
-      }
-      return result;
-    };
-  }
-  */
 }
 
-export type TParserConfigurationOperators = ParserConfigurationOperators;
+export interface TParserConfigurationOperators {
+  main: (state: IConfigurationState) => Promise<string>;
+};

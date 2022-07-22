@@ -1,4 +1,6 @@
+import { Identificators } from '../../identificators';
 import { Container, interfaces } from 'inversify';
+import { TParserConfigurationOperators } from '../../operators/parsing/configuration';
 import { getContainer as getTMContainer, Identificators as TMIdentificators } from 'todo-manager';
 import { setContainer } from '../../inversify.config';
 import {
@@ -12,6 +14,7 @@ import {
   TYAMLConfigurationOperators,
   YAMLConfigurationOperators,
 } from './configuration';
+import { ParserConfigurationOperators } from './configuration-parser';
 import { Identificators as ModuleIdentificators } from './identificators';
 import {
   FileSourceSerializingOperatorsProvider,
@@ -48,6 +51,12 @@ export const yamlSourceBinding = async (container: interfaces.Container) => {
       ModuleIdentificators.FileSourceSerializingOperators,
     )
     .toDynamicValue(FileSourceSerializingOperatorsProvider);
+
+  if (container.isBound(ModuleIdentificators.YAMLConfigurationParserBaseOperators)) {
+    container.unbind(ModuleIdentificators.YAMLConfigurationParserBaseOperators);
+  }
+  container.rebind<TParserConfigurationOperators>(Identificators.ParsingOperations.Configuration).to(ParserConfigurationOperators);
+
 
   Array.from(Object.values(TMIdentificators))
     .filter(id => container.isBound(id))
