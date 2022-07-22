@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 import { writeFile, readFile } from 'node:fs/promises';
 import { injectable } from 'inversify';
-import { createAsyncQueue } from '../lib';
+import { createAsyncQueue } from '../../lib';
 
 interface ICacheInfo {
   lastWrite: number;

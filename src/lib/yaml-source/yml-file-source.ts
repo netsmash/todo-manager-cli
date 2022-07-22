@@ -1,7 +1,6 @@
 import { interfaces } from 'inversify';
 import {
   IEntity,
-  ISourceOperators,
   NotImplementedError,
   Id,
   EntityType,
@@ -17,71 +16,53 @@ import {
   IFlowFileSource,
   IFlowStepFileSource,
   ITaskFileSource,
-} from '../models';
-import { join, dirname } from 'node:path';
+} from './models';
+import { dirname } from 'node:path';
 import { mkdir } from 'node:fs/promises';
-import { Identificators } from '../identificators';
-import { CliError } from '../errors';
-import { asyncQueuedMap, createAsyncQueue } from '../lib';
+import { Identificators } from '../../identificators';
+import { Identificators as ModuleIdentificators } from './identificators';
+import { CliError } from '../../errors';
+import { asyncQueuedMap, createAsyncQueue } from '../../lib';
 import type { TYAMLCacheOperators } from './yml-cache';
-import type { TConfigurationOperators } from './configuration';
 import type { TFileSourceSerializingOperators } from './serializers';
-import type { TLoggingOperators } from './logging';
-import type { TEntityCacheOperators } from './entity-cache';
+import type { TYAMLConfigurationOperators } from './configuration';
+import type {
+  TLoggingOperators,
+  TEntityCacheOperators,
+  ISourceOperators,
+  TSourceProvider,
+} from '../../operators';
 
 export class YAMLFileSourceOperators implements ISourceOperators {
-  protected configuration: TConfigurationOperators;
+  protected configuration: TYAMLConfigurationOperators;
   protected logging: TLoggingOperators;
   protected entityCache: TEntityCacheOperators;
   protected yamlCache: TYAMLCacheOperators;
   protected serializers: TFileSourceSerializingOperators;
-  protected entities: IEntityOperators;
 
-  public constructor(context: interfaces.Context) {
-    this.configuration = context.container.get<TConfigurationOperators>(
-      Identificators.ConfigurationOperators,
-    );
+  public constructor(protected context: interfaces.Context) {
     this.logging = context.container.get<TLoggingOperators>(
       Identificators.LoggingOperators,
     );
     this.entityCache = context.container.get<TEntityCacheOperators>(
       Identificators.EntityCacheOperators,
     );
+    this.configuration = context.container.get<TYAMLConfigurationOperators>(
+      ModuleIdentificators.YAMLConfigurationOperators,
+    );
     this.yamlCache = context.container.get<TYAMLCacheOperators>(
-      Identificators.YAMLCacheOperators,
+      ModuleIdentificators.YAMLCacheOperators,
     );
     this.serializers = context.container.get<TFileSourceSerializingOperators>(
-      Identificators.FileSourceSerializingOperators,
-    );
-    this.entities = context.container.get<IEntityOperators>(
-      Identificators.tm.EntityOperators,
+      ModuleIdentificators.FileSourceSerializingOperators,
     );
   }
 
-  protected get getFilePath() {
-    const getConfiguration = this.configuration.getConfiguration.bind(
-      this.configuration,
+  protected get entities(): IEntityOperators {
+    return this.context.container.get<IEntityOperators>(
+      Identificators.tm.EntityOperators,
     );
-    return async (type: EntityType): Promise<string> => {
-      const configuration = await getConfiguration();
-      const dirPath = configuration.storage.path;
-      let filePath: string;
-      if (type === EntityType.Task) {
-        filePath = join(dirPath, 'tasks.yml');
-      } else if (type === EntityType.FlowStep) {
-        filePath = join(dirPath, 'flowSteps.yml');
-      } else if (type === EntityType.Flow) {
-        filePath = join(dirPath, 'flows.yml');
-      } else if (type === EntityType.Board) {
-        filePath = join(dirPath, 'boards.yml');
-      } else {
-        throw new NotImplementedError(
-          'YAMLFileSourceOperators.filePath() pending for implementation',
-        );
-      }
 
-      return filePath;
-    };
   }
 
   protected asyncQueue = createAsyncQueue();
@@ -115,7 +96,7 @@ export class YAMLFileSourceOperators implements ISourceOperators {
   }
 
   protected get getFileEntities() {
-    const getFilePath = this.getFilePath.bind(this);
+    const getFilePath = this.configuration.getFilePath.bind(this.configuration);
     const getYAMLFromCache = this.getYAMLFromCache.bind(this);
     return async <EFS extends IEntityFileSource>(
       type: EFS['type'],
@@ -136,7 +117,7 @@ export class YAMLFileSourceOperators implements ISourceOperators {
   }
 
   protected get setFileEntities() {
-    const getFilePath = this.getFilePath.bind(this);
+    const getFilePath = this.configuration.getFilePath.bind(this.configuration);
     const setYAMLToCache = this.setYAMLToCache.bind(this);
     return <EFS extends IEntityFileSource>(type: EFS['type']) =>
       async (data: Map<Id, EFS>) => {
@@ -402,8 +383,8 @@ export class YAMLFileSourceOperators implements ISourceOperators {
   }
 }
 
-export type TYAMLFileSourceOperators = YAMLFileSourceOperators;
-
-export const provideYAMLFileSourceOperators = (context: interfaces.Context) => {
+export const provideYAMLFileSourceOperators: TSourceProvider = (
+  context: interfaces.Context,
+) => {
   return new YAMLFileSourceOperators(context);
 };

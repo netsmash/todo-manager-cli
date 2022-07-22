@@ -1,9 +1,4 @@
-import { EntityCollection, IBoard, Id, IFlowStep, ISaved } from 'todo-manager';
-import { IEntityFileSource } from './entity';
-
-export interface ITaskFileSource extends IEntityFileSource {
-  boardId?: Id;
-}
+import { EntityCollection, IBoard, IFlowStep, ISaved } from 'todo-manager';
 
 export interface ITaskFilters {
   board?: IBoard & ISaved;

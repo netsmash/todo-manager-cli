@@ -100,17 +100,11 @@ export class ConfigurationOperators {
   }
 
   public get update() {
-    const sanitizePath = this.sanitizePath.bind(this);
     return (
         partial: IPartialConfiguration | IConfiguration | null | undefined,
       ) =>
       (configuration: IConfiguration): IConfiguration => {
         partial = partial || {};
-        let storage: IConfiguration['storage'] = configuration.storage;
-        if (partial.storage !== undefined) {
-          storage = { ...storage, ...partial.storage };
-          storage.path = sanitizePath(storage.path);
-        }
         let view: IConfigurationState['view'] = configuration.view;
         if (partial.view !== undefined) {
           for (const k of Object.keys(partial.view)) {
@@ -122,31 +116,26 @@ export class ConfigurationOperators {
           view = { ...view, ...partial.view };
         }
         return {
-          storage,
+          ...configuration,
+          ...partial,
           view,
         };
       };
   }
 
   public get updateState() {
-    const sanitizePath = this.sanitizePath.bind(this);
     return (
         partial: IPartialConfiguration | IConfiguration | null | undefined,
       ) =>
       (configuration: IConfigurationState): IConfigurationState => {
         partial = partial || {};
-        let storage: IConfigurationState['storage'] = configuration.storage;
-        if (partial.storage !== undefined) {
-          storage = { ...storage, ...partial.storage };
-          storage.path = sanitizePath(storage.path);
-          storage.file = sanitizePath(storage.file);
-        }
         let view: IConfigurationState['view'] = configuration.view;
         if (partial.view !== undefined) {
           view = { ...view, ...partial.view };
         }
         return {
-          storage,
+          ...configuration,
+          ...partial,
           view,
           files: configuration.files,
         };
@@ -155,18 +144,9 @@ export class ConfigurationOperators {
 
   public get updateStateFromFile() {
     const sanitizePath = this.sanitizePath.bind(this);
-    return (
-        partial: IPartialConfigurationFile | null | undefined,
-        filePath: string,
-      ) =>
+    return (partial: IPartialConfigurationFile | null | undefined, _: string) =>
       (configuration: IConfigurationState): IConfigurationState => {
         partial = partial || {};
-        let storage: IConfigurationState['storage'] = configuration.storage;
-        if (partial.storage !== undefined) {
-          storage = { ...partial.storage, file: filePath };
-          storage.path = sanitizePath(storage.path);
-          storage.file = sanitizePath(storage.file);
-        }
         const view: IConfigurationState['view'] = configuration.view;
         if (partial.allowColor !== undefined) {
           view.allowColor = partial.allowColor;
@@ -175,7 +155,8 @@ export class ConfigurationOperators {
           view.fitToOutputWidth = partial.fitToOutputWidth;
         }
         return {
-          storage,
+          ...configuration,
+          ...partial,
           view,
           files: Array.from(
             new Set([
@@ -210,7 +191,6 @@ export class ConfigurationOperators {
   public get getOrCreate() {
     const defaultFilePath = this.filePath;
     const sanitizePath = this.sanitizePath.bind(this);
-    const replaceVariables = this.replaceVariables.bind(this);
     const dirPath = this.dirPath;
     const write = this.write.bind(this);
     const read = this.read.bind(this);
@@ -223,19 +203,12 @@ export class ConfigurationOperators {
         // assume file do not exists
         await mkdir(dirPath, { recursive: true });
         configurationFile = defaultConfiguration as IConfigurationFile;
-        configurationFile.storage.path = replaceVariables(defaultFilePath)(
-          configurationFile.storage.path,
-        );
         await write(configurationFile);
       } else {
         configurationFile = obtainedConfiguration;
       }
       // transform configuration file into a state
       let configurationState: IConfigurationState = {
-        storage: {
-          ...configurationFile.storage,
-          file: defaultFilePath,
-        },
         view: {
           allowColor: true,
           fitToOutputWidth: true,
