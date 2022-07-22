@@ -52,9 +52,6 @@ export const yamlSourceBinding = async (container: interfaces.Container) => {
     )
     .toDynamicValue(FileSourceSerializingOperatorsProvider);
 
-  if (container.isBound(ModuleIdentificators.YAMLConfigurationParserBaseOperators)) {
-    container.unbind(ModuleIdentificators.YAMLConfigurationParserBaseOperators);
-  }
   container.rebind<TParserConfigurationOperators>(Identificators.ParsingOperations.Configuration).to(ParserConfigurationOperators);
 
 
