@@ -1,5 +1,4 @@
 import { IFlow, ISaved, TFlowStepColor } from 'todo-manager';
-import { IEntityFileSource } from './entity';
 
 export const FlowStepColors = new Set<string>([
   'black',
@@ -19,10 +18,6 @@ export const FlowStepColors = new Set<string>([
   'cyanBright',
   'whiteBright',
 ]);
-
-export interface IFlowStepFileSource extends IEntityFileSource {
-  color?: TFlowStepColor;
-}
 
 export interface IFlowStepFilters {
   flow?: IFlow & ISaved;

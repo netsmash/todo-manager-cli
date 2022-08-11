@@ -1,31 +1,16 @@
 #!/usr/bin/env node
-import { Command } from 'commander';
-import { TodoManagerError } from 'todo-manager';
-import { CliError } from './errors';
-import { addMainCommand } from './commands';
+import { trello } from './lib/trello';
+import { loadYAMLSource } from './lib/yaml-source';
+import { App } from './core';
+import { loadAppCommands, loadAppConfiguration, loadLogging } from './middleware';
 
 (async () => {
-  const command = new Command();
-  addMainCommand(command);
-
-  // parse
-  await command
-    .parseAsync()
-    .catch((error: Error) => {
-      if (error instanceof CliError) {
-        console.error(error.message);
-      } else if (error instanceof TodoManagerError) {
-        console.error(error.message);
-      } else {
-        console.log(error.stack);
-        throw error;
-      }
-    })
-    .finally(async () => {
-      process.stdout.end();
-      /*
-      const serviceProvider = await getServiceProvider();
-      serviceProvider.unbindAll();
-      */
-    });
+  const app = new App();
+  app.addMiddleware(loadAppCommands)
+    .addMiddleware(loadAppConfiguration)
+    .addMiddleware(loadYAMLSource)
+    .addMiddleware(loadLogging)
+    .addMiddleware(trello);
+  await app.run();
+  process.stdout.end();
 })();

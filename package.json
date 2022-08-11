@@ -1,13 +1,13 @@
 {
   "name": "todo-manager-cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A simple CLI to manage tasks",
   "scripts": {
     "build": "npm run clean && tsc && cp package.json README.md dist/",
     "clean": "rm -rf ./dist",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint src/ --ext .ts,.tsx",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node --pretty src/index.ts"
   },
   "bin": {
     "todo": "./index.js"

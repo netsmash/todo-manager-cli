@@ -2,6 +2,18 @@
 
 The purpouse of this file is to log the high level of changes on the product.
 
+## [0.2.1] 22-07-2022
+
+### Added
+- On README, valid color names has been written.
+- On README, a cheatsheet with common command formulas has been added.
+
+### Changed
+- Code has been refactor to be more modular.
+
+### Fixed
+- On show board detail, frequencies of tasks are aligned.
+
 ## [0.2.0] 27-04-2022
 
 ### Added
