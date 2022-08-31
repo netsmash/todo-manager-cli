@@ -95,7 +95,7 @@ export const getOperators = (() => {
     const container = await getContainer();
 
     return new (class implements ICliOperators {
-      public constructor(protected container: interfaces.Container) {}
+      public constructor(public container: interfaces.Container) {}
 
       public get configuration(): TConfigurationOperators {
         return this.container.get<TConfigurationOperators>(
