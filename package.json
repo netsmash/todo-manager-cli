@@ -10,7 +10,7 @@
     "start": "ts-node --pretty src/index.ts"
   },
   "bin": {
-    "todo": "./index.js"
+    "todo": "./src/index.js"
   },
   "author": "NetSmash",
   "license": "MIT",
