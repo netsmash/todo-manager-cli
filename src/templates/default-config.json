@@ -1,5 +1,5 @@
 {
-  "format": "v0.0.1",
+  "format": "v1.0.0",
   "storage": {
     "type": "files",
     "format": "yaml",

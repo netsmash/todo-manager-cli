@@ -28,12 +28,12 @@ export class FlowStepOperators extends FlowStepOperatorsBase {
       } else if (collection.size === 0) {
         throw new EntityDoesNotExistError(
           EntityType.FlowStep,
-          JSON.stringify(filters),
+          filters.regexp?.toString() || '',
         );
       } else {
         throw new EntityIsNotUniqueError(
           EntityType.FlowStep,
-          JSON.stringify(filters),
+          filters.regexp?.toString() || '',
         );
       }
     };

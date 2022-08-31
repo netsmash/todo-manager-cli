@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { TodoManagerError } from 'todo-manager';
 import { CliError } from './errors';
 import { AppMiddleware, AppComposedMiddleware } from './models/core';
+import packageJson from '../package.json';
 
 export class App {
   protected middlewareStack: AppMiddleware[] = [];
@@ -17,7 +18,7 @@ export class App {
       const middleware = this.middlewareStack[i] as AppMiddleware;
       composedMiddleware = middleware(composedMiddleware);
     }
-    await composedMiddleware(new Command());
+    await composedMiddleware(new Command().version(packageJson.version));
     return this;
   }
 

@@ -2,6 +2,18 @@
 
 The purpouse of this file is to log the high level of changes on the product.
 
+## [1.0.0] 22-07-2022
+
+### Added
+- On README, explaning how to update flows.
+
+### Changed
+- Updated configuration format version to `1.0.0`, without any other change.
+
+### Fixed
+- Show correct version on `--version`.
+- Correctly show regular expression on flow steps search error.
+
 ## [0.2.1] 22-07-2022
 
 ### Added
