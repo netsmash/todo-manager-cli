@@ -9,7 +9,6 @@ import { addEditCommands } from "../commands/edit";
 
 export const loadAppCommands: AppMiddleware = (next) => async (command: Command) => {
   command
-    .version('v0.0.1', '-v, --version')
     .option('--color', 'Allow colors and styles on output')
     .option('--no-color', 'Raw output without colors nor styles')
     .option(
