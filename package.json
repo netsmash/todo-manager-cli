@@ -1,6 +1,6 @@
 {
   "name": "todo-manager-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple CLI to manage tasks",
   "scripts": {
     "build": "npm run clean && tsc && cp package.json README.md dist/",
@@ -10,7 +10,7 @@
     "start": "ts-node --pretty src/index.ts"
   },
   "bin": {
-    "todo": "./index.js"
+    "todo": "./src/index.js"
   },
   "author": "NetSmash",
   "license": "MIT",
